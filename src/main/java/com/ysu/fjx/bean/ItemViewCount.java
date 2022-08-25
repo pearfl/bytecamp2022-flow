@@ -7,6 +7,7 @@ public class ItemViewCount {
     private Long count;
 
     public ItemViewCount() {
+
     }
 
     public ItemViewCount(String word, Long windowEnd, Long count) {

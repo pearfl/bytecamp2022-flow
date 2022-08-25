@@ -5,8 +5,35 @@ public class WordSource {
     private String word;
     private Long count;
     private Long timestamp;
+    private String ignore;
 
     public WordSource() {
+
+    }
+
+    public WordSource(String word, Long count, Long timestamp, String ignore) {
+        this.word = word;
+        this.count = count;
+        this.timestamp = timestamp;
+        this.ignore = ignore;
+    }
+
+    @Override
+    public String toString() {
+        return "WordSource{" +
+                "word='" + word + '\'' +
+                ", count=" + count +
+                ", timestamp=" + timestamp +
+                ", ignore='" + ignore + '\'' +
+                '}';
+    }
+
+    public String getIgnore() {
+        return ignore;
+    }
+
+    public void setIgnore(String ignore) {
+        this.ignore = ignore;
     }
 
     public WordSource(String word, Long count, Long timestamp) {
@@ -39,12 +66,4 @@ public class WordSource {
         this.timestamp = timestamp;
     }
 
-    @Override
-    public String toString() {
-        return "WordSource{" +
-                "word='" + word + '\'' +
-                ", count=" + count +
-                ", timestamp=" + timestamp +
-                '}';
-    }
 }

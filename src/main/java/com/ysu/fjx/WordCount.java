@@ -3,16 +3,20 @@ package com.ysu.fjx;
 import com.ysu.fjx.bean.ItemViewCount;
 import com.ysu.fjx.bean.WordSource;
 import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.api.common.serialization.SimpleStringEncoder;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.core.fs.Path;
 import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
+import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
@@ -29,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class WordCount {
     public static void main(String[] args) throws Exception {
@@ -69,6 +74,20 @@ public class WordCount {
                 });
 
         dataStream.print("data");
+
+        StreamingFileSink<String> fileSink = StreamingFileSink
+                .<String>forRowFormat(new Path("./output"),
+                        new SimpleStringEncoder<>("UTF-8"))
+                .withRollingPolicy(
+                        DefaultRollingPolicy.builder()
+                                .withRolloverInterval(TimeUnit.MINUTES.toMillis(15))
+                                .withInactivityInterval(TimeUnit.MINUTES.toMillis(5))
+                                .withMaxPartSize(1024 * 1024 * 1024)
+                                .build())
+                .build();
+
+        // 将Event转换成String写入文件
+        dataStream.map(WordSource::toString).addSink(fileSink);
 
         // 4. 分组开窗聚合，得到每个窗口内各个商品的count值
         DataStream<ItemViewCount> windowAggStream = dataStream

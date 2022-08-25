@@ -1,0 +1,6 @@
+WordSource{word='apple', count=1, timestamp=1660961103000, ignore='yes'}
+WordSource{word='apple', count=4, timestamp=1660961228000, ignore='yes'}
+WordSource{word='apple', count=4, timestamp=1660961228000, ignore='no'}
+WordSource{word='ale', count=1, timestamp=1660961401000, ignore='yes'}
+WordSource{word='ale', count=1, timestamp=1660961402000, ignore='yes'}
+WordSource{word='apple', count=99, timestamp=1660961190000, ignore='yes'}

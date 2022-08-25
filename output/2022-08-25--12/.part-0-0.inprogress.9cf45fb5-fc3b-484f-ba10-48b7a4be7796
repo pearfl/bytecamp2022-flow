@@ -1,7 +1,0 @@
-WordSource{word='apple', count=1, timestamp=1660961402000, ignore='yes'}
-WordSource{word='apple', count=99, timestamp=1660961390000, ignore='yes'}
-WordSource{word='ooopple', count=1, timestamp=1660962001000, ignore='yes'}
-WordSource{word='oppp', count=2, timestamp=1660962305000, ignore='yes'}
-WordSource{word='ooopple', count=1, timestamp=1660961762000, ignore='yes'}
-WordSource{word='oppp', count=2, timestamp=1660962305000, ignore='yes'}
-WordSource{word='oppp', count=2, timestamp=1660962605000, ignore='yes'}

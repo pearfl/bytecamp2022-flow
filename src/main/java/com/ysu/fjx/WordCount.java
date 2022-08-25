@@ -7,12 +7,15 @@ import org.apache.flink.api.common.serialization.SimpleStringEncoder;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
+import org.apache.flink.api.common.state.MapState;
+import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
@@ -25,22 +28,28 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.util.Collector;
+import org.apache.flink.util.OutputTag;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.lucene.index.Fields;
 
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class WordCount {
+
+    private static KeyedProcessFunction<Tuple, ItemViewCount, String>.OnTimerContext ctx;
+
     public static void main(String[] args) throws Exception {
         // 1. 创建执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-       env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);//基于事件时间
+//       env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);//基于事件时间
 
         // 2. 读取数据，创建DataStream
 //        URL resource = WordSource.class.getResource("/word");
@@ -68,8 +77,8 @@ public class WordCount {
                 })
                 .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<WordSource>(Time.seconds(1)) {
                     @Override
-                    public long extractTimestamp(WordSource element) {
-                        return element.getTimestamp();
+                    public long extractTimestamp(WordSource apachLogEvent) {
+                        return apachLogEvent.getTimestamp();
                     }
                 });
 
@@ -89,13 +98,20 @@ public class WordCount {
         // 将Event转换成String写入文件
         dataStream.map(WordSource::toString).addSink(fileSink);
 
+        // 定义一个侧输出流标签
+        OutputTag<WordSource> lateTag = new OutputTag<WordSource>("late"){};
+
         // 4. 分组开窗聚合，得到每个窗口内各个商品的count值
-        DataStream<ItemViewCount> windowAggStream = dataStream
+        SingleOutputStreamOperator<ItemViewCount> windowAggStream = dataStream
                 .filter(data -> "yes".equals(data.getIgnore()))    // 过滤yes行为
-                .keyBy("word")    // 按商品ID分组
+                .keyBy("word")    // 按单词进行分组
                 .timeWindow(Time.minutes(5)) // 开一个时间为5分钟的滚动窗口
-                .allowedLateness(Time.minutes(1))
+                .allowedLateness(Time.minutes(1)) //允许迟到一分钟
+                .sideOutputLateData(lateTag) //迟到一分钟以上后数据进入侧输出流
                 .aggregate(new ItemCountAgg(),new WindowItemCountResult());
+
+        windowAggStream.print("agg");
+        windowAggStream.getSideOutput(lateTag).print("late");
 
         // 5. 收集同一窗口的所有单词的个数，排序输出top n
         DataStream<String> resultStream = windowAggStream
@@ -150,44 +166,54 @@ public class WordCount {
             this.topSize = topSize;
         }
 
-        // 定义列表状态，保存当前窗口内所有输出的ItemViewCount
-        ListState<ItemViewCount> itemViewCountListState;
-
+        // 定义列表状态，保存当前窗口内所有输出的pageViewCountMapState
+        MapState<String, Long> pageViewCountMapState;
         @Override
         public void open(Configuration parameters) throws Exception {
-            itemViewCountListState = getRuntimeContext().getListState(new ListStateDescriptor<ItemViewCount>("item-view-count-list", ItemViewCount.class));
+            pageViewCountMapState = getRuntimeContext().getMapState(new MapStateDescriptor<String, Long>("page-count-map", String.class, Long.class));
         }
 
         @Override
         public void processElement(ItemViewCount value, Context ctx, Collector<String> out) throws Exception {
             // 每来一条数据，存入List中，并注册定时器
-            itemViewCountListState.add(value);
+            pageViewCountMapState.put(value.getWord(), value.getCount());
             ctx.timerService().registerEventTimeTimer( value.getWindowEnd() + 1 );
+            // 注册一个1分钟之后的定时器，用来清空状态
+//            ctx.timerService().registerEventTimeTimer(value.getWindowEnd() + 60 * 1000L);//对于迟到的数据进行定时
         }
 
-        @Override
         public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
-            // 定时器触发，当前已收集到所有数据，排序输出
-            ArrayList<ItemViewCount> itemViewCounts = Lists.newArrayList(itemViewCountListState.get().iterator());
+            // 先判断是否到了窗口关闭清理时间，如果是，直接清空状态返回
+//            if( timestamp ==  + 60 * 1000L ){
+//                pageViewCountMapState.clear();
+//                return;
+//            }
 
-            itemViewCounts.sort(new Comparator<ItemViewCount>() {
+            ArrayList<Map.Entry<String, Long>> pageViewCounts = Lists.newArrayList(pageViewCountMapState.entries());
+
+            pageViewCounts.sort(new Comparator<Map.Entry<String, Long>>() {
                 @Override
-                public int compare(ItemViewCount o1, ItemViewCount o2) {
-                    return o2.getCount().intValue() - o1.getCount().intValue();
+                public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
+                    if(o1.getValue() > o2.getValue())
+                        return -1;
+                    else if(o1.getValue() < o2.getValue())
+                        return 1;
+                    else
+                        return 0;
                 }
             });
 
-            // 将排名信息格式化成String，方便打印输出
+            // 格式化成String输出
             StringBuilder resultBuilder = new StringBuilder();
             resultBuilder.append("===================================\n");
-            resultBuilder.append("窗口结束时间：").append( new Timestamp(timestamp - 1)).append("\n");
+            resultBuilder.append("窗口结束时间：").append(new Timestamp(timestamp - 1)).append("\n");
 
             // 遍历列表，取top n输出
-            for( int i = 0; i < Math.min(topSize, itemViewCounts.size()); i++ ){
-                ItemViewCount currentItemViewCount = itemViewCounts.get(i);
-                resultBuilder.append("NO ").append(i+1).append(":")
-                        .append(" 单词 = ").append(currentItemViewCount.getWord())
-                        .append(" 数量 = ").append(currentItemViewCount.getCount())
+            for (int i = 0; i < Math.min(topSize, pageViewCounts.size()); i++) {
+                Map.Entry<String, Long> currentItemViewCount = pageViewCounts.get(i);
+                resultBuilder.append("NO ").append(i + 1).append(":")
+                        .append(" 单词 = ").append(currentItemViewCount.getKey())
+                        .append(" 个数 = ").append(currentItemViewCount.getValue())
                         .append("\n");
             }
             resultBuilder.append("===============================\n\n");

@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2be4d72a-60eb-4a6c-bfd6-0100612b05bb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/ysu/fjx/KafkaProducerUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/log4j.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/word" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ysu/fjx/WordCount.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ysu/fjx/WordCount.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ysu/fjx/bean/ItemViewCount.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ysu/fjx/bean/ItemViewCount.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ysu/fjx/bean/WordSource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ysu/fjx/bean/WordSource.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -27,7 +21,7 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/com/ysu/fjx/WordCount.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="184">
-              <caret line="79" lean-forward="true" selection-start-line="79" selection-end-line="79" />
+              <caret line="76" column="62" lean-forward="true" selection-start-line="76" selection-start-column="62" selection-end-line="76" selection-end-column="62" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -127,7 +121,7 @@
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-9" />
-    <option name="width" value="1278" />
+    <option name="width" value="1674" />
     <option name="height" value="1014" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -197,14 +191,14 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/resources" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="settings.gitee" />
+    <property name="settings.editor.selected.configurable" value="settings.github" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -258,7 +252,7 @@
       <option name="presentableId" value="Default" />
       <updated>1661310237800</updated>
       <workItem from="1661310240660" duration="12189000" />
-      <workItem from="1661387767500" duration="6458000" />
+      <workItem from="1661387767500" duration="7834000" />
     </task>
     <task id="LOCAL-00001" summary="flink-kafka1.0.0">
       <created>1661320791511</created>
@@ -274,17 +268,23 @@
       <option name="project" value="LOCAL" />
       <updated>1661322792888</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="flink-kafka1.0.2">
+      <created>1661395478797</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1661395478797</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="18647000" />
+    <option name="totallyTimeSpent" value="20023000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-6" y="0" width="852" height="676" extended-state="0" />
-    <editor active="true" />
+    <frame x="-7" y="-7" width="1295" height="704" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.111753374" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.13823767" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -293,7 +293,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.13970588" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.13286713" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -354,7 +354,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="flink-kafka1.0.0" />
     <MESSAGE value="flink-kafka1.0.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="flink-kafka1.0.1" />
+    <MESSAGE value="flink-kafka1.0.2" />
+    <option name="LAST_COMMIT_MESSAGE" value="flink-kafka1.0.2" />
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
@@ -414,7 +415,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/com/ysu/fjx/WordCount.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="184">
-          <caret line="79" lean-forward="true" selection-start-line="79" selection-end-line="79" />
+          <caret line="76" column="62" lean-forward="true" selection-start-line="76" selection-start-column="62" selection-end-line="76" selection-end-column="62" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
